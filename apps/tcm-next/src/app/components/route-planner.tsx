@@ -4,12 +4,22 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Route, Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import {
+  Route,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  RotateCcw,
+} from 'lucide-react';
 import { InteractiveMap } from './interactive-map';
 
 interface RoutePlannerProps {
-  onRouteChange?: (coordinates: [number, number][], distanceMiles: number) => void;
+  onRouteChange?: (
+    coordinates: [number, number][],
+    distanceMiles: number
+  ) => void;
   initialRoute?: [number, number][];
   currentMile?: number;
   showSimulation?: boolean;
@@ -21,11 +31,27 @@ interface RoutePlannerProps {
   routeDistance?: number;
 }
 
-export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, showSimulation = false, isPlaying = false, onPlayToggle, playbackSpeed = 1, onSpeedChange, onMileChange, routeDistance = 26.2 }: RoutePlannerProps) {
-  const [currentRoute, setCurrentRoute] = useState<[number, number][]>(initialRoute || []);
+export function RoutePlanner({
+  onRouteChange,
+  initialRoute,
+  currentMile = 0,
+  showSimulation = false,
+  isPlaying = false,
+  onPlayToggle,
+  playbackSpeed = 1,
+  onSpeedChange,
+  onMileChange,
+  routeDistance = 26.2,
+}: RoutePlannerProps) {
+  const [currentRoute, setCurrentRoute] = useState<[number, number][]>(
+    initialRoute || []
+  );
   const [localRouteDistance, setLocalRouteDistance] = useState(0);
 
-  const handleRouteUpdate = (coordinates: [number, number][], distanceMiles: number) => {
+  const handleRouteUpdate = (
+    coordinates: [number, number][],
+    distanceMiles: number
+  ) => {
     setCurrentRoute(coordinates);
     setLocalRouteDistance(distanceMiles);
 
@@ -54,8 +80,8 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
     }
   };
 
-
-  const isMarathonDistance = localRouteDistance >= 26.0 && localRouteDistance <= 26.5;
+  const isMarathonDistance =
+    localRouteDistance >= 26.0 && localRouteDistance <= 26.5;
 
   return (
     <Card className="p-6">
@@ -74,8 +100,9 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {localRouteDistance > 0 && (
+            {localRouteDistance && (
               <Badge variant={isMarathonDistance ? 'default' : 'secondary'}>
+                {currentMile.toFixed(2)} completed out of{' '}
                 {localRouteDistance.toFixed(2)} miles
               </Badge>
             )}
@@ -125,38 +152,51 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
                 <SkipForward className="w-4 h-4" />
                 +1 Mile
               </Button>
+
+              {/* <div className="h-6 w-px bg-border mx-2"></div> */}
             </div>
 
-            {/* Position and Speed Controls */}
-            <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Position:</span>{' '}
-                  <span className="font-medium">Mile {currentMile.toFixed(1)}</span>
-                </div>
+            <div className="flex items-center justify-center gap-4 p-4 bg-muted rounded-lg">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetPosition}
+                className="flex items-center gap-1"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Reset
+              </Button>
+              <div className="text-sm text-muted-foreground">Speed:</div>
+              {[0.5, 1, 2, 5].map((speed) => (
                 <Button
-                  variant="ghost"
+                  key={speed}
+                  variant={playbackSpeed === speed ? 'default' : 'outline'}
                   size="sm"
-                  onClick={resetPosition}
-                  className="flex items-center gap-1"
+                  onClick={() => onSpeedChange?.(speed)}
+                  className="text-xs"
                 >
-                  <RotateCcw className="w-3 h-3" />
-                  Reset
+                  {speed}x
                 </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Speed:</span>
-                {[0.5, 1, 2, 5].map((speed) => (
-                  <Button
-                    key={speed}
-                    variant={playbackSpeed === speed ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => onSpeedChange?.(speed)}
-                    className="text-xs"
-                  >
-                    {speed}x
-                  </Button>
-                ))}
+              ))}
+            </div>
+            {/* Position Slider */}
+            <div className="flex justify-center">
+              <div className="w-full max-w-md space-y-3">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Start</span>
+                  <span>
+                    Mile {currentMile.toFixed(1)} of {routeDistance.toFixed(1)}
+                  </span>
+                  <span>Finish</span>
+                </div>
+                <Slider
+                  value={[currentMile]}
+                  onValueChange={(value) => onMileChange?.(value)}
+                  min={0}
+                  max={routeDistance}
+                  step={0.1}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
@@ -167,7 +207,7 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
           <InteractiveMap
             onRouteChange={handleRouteUpdate}
             initialRoute={currentRoute}
-            center={[-93.2650, 44.9778]} // Minneapolis/St. Paul
+            center={[-93.265, 44.9778]} // Minneapolis/St. Paul
             zoom={12}
             height="600px"
             currentMile={currentMile}
@@ -192,7 +232,9 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
-                {isMarathonDistance ? '✓' : (26.2 - localRouteDistance).toFixed(1)}
+                {isMarathonDistance
+                  ? '✓'
+                  : (26.2 - localRouteDistance).toFixed(1)}
               </div>
               <div className="text-sm text-muted-foreground">
                 {isMarathonDistance ? 'Ready' : 'Miles to go'}
@@ -203,11 +245,17 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
 
         {/* Tips */}
         <div className="text-xs text-muted-foreground p-3 bg-accent/20 rounded-lg">
-          <p><strong>How to use:</strong></p>
+          <p>
+            <strong>How to use:</strong>
+          </p>
           <ul className="list-disc list-inside mt-1 space-y-1">
-            <li>Use the simulation controls to follow a runner through the race</li>
+            <li>
+              Use the simulation controls to follow a runner through the race
+            </li>
             <li>Add race markers at specific distances to log split times</li>
-            <li>Track your progress through the famous Twin Cities Marathon route</li>
+            <li>
+              Track your progress through the famous Twin Cities Marathon route
+            </li>
             <li>Adjust playback speed to review different parts of the race</li>
           </ul>
         </div>

@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -19,7 +18,6 @@ import {
   Minus,
   BarChart3,
   Target,
-  AlertCircle,
 } from 'lucide-react';
 
 interface MileMarker {
@@ -153,64 +151,6 @@ export function MileMarkerSystem({
     return 'target';
   };
 
-  const exportMarkers = () => {
-    const csvData = [
-      'Mile,Time,Pace,Split,Note',
-      ...enrichedMarkers.map((m) =>
-        [
-          m.mile,
-          m.actualTime || '',
-          formatPace(m.pace),
-          formatTime(m.split),
-          m.note || '',
-        ].join(',')
-      ),
-    ].join('\n');
-
-    const blob = new Blob([csvData], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'marathon-splits.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importMarkers = () => {
-    try {
-      const lines = bulkData.trim().split('\n');
-      const newMarkers: MileMarker[] = [];
-
-      for (const line of lines) {
-        const parts = line.split(',').map((p) => p.trim());
-        if (parts.length >= 2) {
-          const mile = Number.parseFloat(parts[0]);
-          const time = parts[1];
-          const note = parts[4] || undefined;
-
-          if (
-            mile >= 0 &&
-            mile <= 26.2 &&
-            time.match(/^\d{1,2}:\d{2}:\d{2}$/)
-          ) {
-            newMarkers.push({ mile, time, actualTime: time, note });
-          }
-        }
-      }
-
-      if (newMarkers.length > 0) {
-        const combinedMarkers = [...mileMarkers, ...newMarkers];
-        const uniqueMarkers = combinedMarkers.filter(
-          (marker, index, self) =>
-            index === self.findIndex((m) => m.mile === marker.mile)
-        );
-        onMarkersChange(uniqueMarkers.sort((a, b) => a.mile - b.mile));
-        setBulkData('');
-      }
-    } catch (error) {
-      console.error('Error importing markers:', error);
-    }
-  };
 
   const getProgressPercentage = () => {
     return Math.min(100, (currentMile / 26.2) * 100);
@@ -289,10 +229,9 @@ export function MileMarkerSystem({
       {/* Mile Marker Management */}
       <Card className="p-6">
         <Tabs defaultValue="add" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="add">Add Marker</TabsTrigger>
             <TabsTrigger value="list">View All</TabsTrigger>
-            <TabsTrigger value="import">Import/Export</TabsTrigger>
           </TabsList>
 
           <TabsContent value="add" className="space-y-4">
@@ -360,12 +299,6 @@ export function MileMarkerSystem({
           <TabsContent value="list" className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-semibold">All Mile Markers</h4>
-              {enrichedMarkers.length > 0 && (
-                <Button variant="outline" size="sm" onClick={exportMarkers}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
-              )}
             </div>
 
             {enrichedMarkers.length === 0 ? (
@@ -378,7 +311,7 @@ export function MileMarkerSystem({
               </div>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {enrichedMarkers.map((marker, index) => (
+                {enrichedMarkers.map((marker) => (
                   <div
                     key={marker.mile}
                     className="p-4 border border-border rounded-lg"
@@ -517,72 +450,6 @@ export function MileMarkerSystem({
             )}
           </TabsContent>
 
-          <TabsContent value="import" className="space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <Upload className="w-5 h-5 text-primary" />
-              <h4 className="font-semibold">Import/Export Data</h4>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="bulk-data" className="text-sm font-medium">
-                  Bulk Import (CSV Format)
-                </Label>
-                <Textarea
-                  id="bulk-data"
-                  placeholder="5,1:30:00,Good pace&#10;10,2:45:00,Feeling strong&#10;13.1,3:35:00,Halfway point"
-                  value={bulkData}
-                  onChange={(e) => setBulkData(e.target.value)}
-                  rows={6}
-                />
-                <div className="text-xs text-muted-foreground mt-2">
-                  Format: Mile,Time,Note (one per line). Example: 5,1:30:00,Good
-                  pace
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={importMarkers}
-                  disabled={!bulkData.trim()}
-                  className="flex-1"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import Data
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={exportMarkers}
-                  disabled={enrichedMarkers.length === 0}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export CSV
-                </Button>
-              </div>
-
-              {enrichedMarkers.length > 0 && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2 text-sm font-medium mb-2">
-                    <AlertCircle className="w-4 h-4" />
-                    Export Preview
-                  </div>
-                  <div className="text-xs font-mono bg-background p-2 rounded border max-h-32 overflow-y-auto">
-                    Mile,Time,Pace,Split,Note
-                    <br />
-                    {enrichedMarkers.slice(0, 3).map((m) => (
-                      <div key={m.mile}>
-                        {m.mile},{m.actualTime},{formatPace(m.pace)},
-                        {formatTime(m.split)},{m.note || ''}
-                      </div>
-                    ))}
-                    {enrichedMarkers.length > 3 && (
-                      <div>... and {enrichedMarkers.length - 3} more</div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </TabsContent>
         </Tabs>
       </Card>
     </div>

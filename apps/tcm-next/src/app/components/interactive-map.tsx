@@ -14,7 +14,10 @@ import { getLength } from 'ol/sphere';
 import 'ol/ol.css';
 
 interface InteractiveMapProps {
-  onRouteChange?: (coordinates: [number, number][], distanceMiles: number) => void;
+  onRouteChange?: (
+    coordinates: [number, number][],
+    distanceMiles: number
+  ) => void;
   initialRoute?: [number, number][];
   center?: [number, number];
   zoom?: number;
@@ -26,7 +29,7 @@ interface InteractiveMapProps {
 export function InteractiveMap({
   onRouteChange,
   initialRoute,
-  center = [-93.2650, 44.9778], // Minneapolis default
+  center = [-93.265, 44.9778], // Minneapolis default
   zoom = 12,
   height = '500px',
   currentMile = 0,
@@ -82,7 +85,9 @@ export function InteractiveMap({
     const vectorLayer = new VectorLayer({
       source: vectorSourceRef.current,
       style: (feature) => {
-        return feature.getGeometry()?.getType() === 'Point' ? pointStyle : routeStyle;
+        return feature.getGeometry()?.getType() === 'Point'
+          ? pointStyle
+          : routeStyle;
       },
     });
 
@@ -111,7 +116,6 @@ export function InteractiveMap({
     });
 
     mapInstanceRef.current = map;
-
 
     // Load initial route if provided
     if (initialRoute && initialRoute.length > 0) {
@@ -176,7 +180,13 @@ export function InteractiveMap({
 
   // Update current position marker when mile changes
   useEffect(() => {
-    if (!showSimulation || !mapInstanceRef.current || !initialRoute || initialRoute.length === 0) return;
+    if (
+      !showSimulation ||
+      !mapInstanceRef.current ||
+      !initialRoute ||
+      initialRoute.length === 0
+    )
+      return;
 
     const position = getPositionAtMile(currentMile);
     if (!position) return;
@@ -193,9 +203,10 @@ export function InteractiveMap({
       currentPositionFeatureRef.current = new Feature({
         geometry: new Point(projectedPosition),
       });
-      currentPositionSourceRef.current.addFeature(currentPositionFeatureRef.current);
+      currentPositionSourceRef.current.addFeature(
+        currentPositionFeatureRef.current
+      );
     }
-
   }, [currentMile, showSimulation, initialRoute]);
 
   // Clear position feature when simulation stops and return to full route view
@@ -206,7 +217,7 @@ export function InteractiveMap({
 
       // Return to full route view when simulation stops
       if (mapInstanceRef.current && initialRoute && initialRoute.length > 0) {
-        const projectedCoords = initialRoute.map(coord => fromLonLat(coord));
+        const projectedCoords = initialRoute.map((coord) => fromLonLat(coord));
         const lineString = new LineString(projectedCoords);
 
         mapInstanceRef.current.getView().fit(lineString, {
@@ -218,14 +229,13 @@ export function InteractiveMap({
     }
   }, [showSimulation, initialRoute]);
 
-
   const loadInitialRoute = (coordinates: [number, number][]) => {
     if (coordinates.length === 0) return;
 
     // Clear existing features first
     vectorSourceRef.current.clear();
 
-    const projectedCoords = coordinates.map(coord => fromLonLat(coord));
+    const projectedCoords = coordinates.map((coord) => fromLonLat(coord));
     const lineString = new LineString(projectedCoords);
     const feature = new Feature({
       geometry: lineString,
@@ -252,11 +262,10 @@ export function InteractiveMap({
     }
   };
 
-
   return (
     <div className="space-y-4">
       {/* Simulation Display */}
-      {showSimulation && totalDistance > 0 && (
+      {/* {showSimulation && totalDistance > 0 && (
         <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
           <div className="text-sm text-muted-foreground">
             <span>Current Position: Mile {currentMile.toFixed(1)}</span>
@@ -265,7 +274,7 @@ export function InteractiveMap({
             Distance: <span className="font-semibold">{totalDistance.toFixed(2)} miles</span>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Map Container */}
       <div
@@ -273,7 +282,6 @@ export function InteractiveMap({
         className="w-full rounded-lg border border-border overflow-hidden"
         style={{ height }}
       />
-
     </div>
   );
 }
