@@ -212,8 +212,8 @@ export function TimeCalculator({
         case 'even':
           splitTime = (totalTime / 26.2) * mile;
           break;
-        case 'negative':
-          // Start 5% slower, finish 5% faster
+        case 'negative': // Start 5% slower, finish 5% faster
+        {
           const avgPace = totalTime / 26.2;
           const firstHalfPace = avgPace * 1.025;
           const secondHalfPace = avgPace * 0.975;
@@ -223,8 +223,8 @@ export function TimeCalculator({
             splitTime = firstHalfPace * 13.1 + secondHalfPace * (mile - 13.1);
           }
           break;
-        case 'positive':
-          // Start 5% faster, finish 5% slower
+        }
+        case 'positive': { // Start 5% faster, finish 5% slower
           const avgPacePos = totalTime / 26.2;
           const firstHalfPacePos = avgPacePos * 0.975;
           const secondHalfPacePos = avgPacePos * 1.025;
@@ -235,6 +235,7 @@ export function TimeCalculator({
               firstHalfPacePos * 13.1 + secondHalfPacePos * (mile - 13.1);
           }
           break;
+        }
       }
 
       splits.push({
