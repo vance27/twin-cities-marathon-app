@@ -257,18 +257,21 @@ export function InteractiveControls({
           <Label className="text-sm font-medium">
             Playback Speed: {playbackSpeed}x
           </Label>
-          <div className="flex gap-2">
-            {[0.5, 1, 2, 4].map((speed) => (
+          <div className="grid grid-cols-3 gap-2">
+            {[0.25, 0.5, 1, 2, 5, 10].map((speed) => (
               <Button
                 key={speed}
                 variant={playbackSpeed === speed ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => onSpeedChange(speed)}
-                className="flex-1"
+                className="text-xs"
               >
                 {speed}x
               </Button>
             ))}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            <p>0.25x = Ultra slow • 1x = Normal • 10x = Fast preview</p>
           </div>
         </div>
 

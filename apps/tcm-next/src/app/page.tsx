@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Timer, Target, Mountain, TrendingUp } from 'lucide-react';
+import { Timer, Target, Mountain, TrendingUp } from 'lucide-react';
 import { useMarathonRoute } from '@/components/marathon-route';
-import { RouteSelector } from '@/components/route-selector';
 import { TimeCalculator } from '@/components/time-calculator';
 import { InteractiveControls } from '@/components/interactive-controls';
 import { MileMarkerSystem } from '@/components/mile-marker-system';
+import { RoutePlanner } from '@/components/route-planner';
 
 interface MileMarker {
   mile: number;
@@ -23,11 +23,12 @@ export default function MarathonTracker() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState('nyc-marathon');
+  const [selectedRoute] = useState('twin-cities-marathon');
   const [currentMile, setCurrentMile] = useState([0]);
   const [mileMarkers, setMileMarkers] = useState<MileMarker[]>([]);
   const [fastPace, setFastPace] = useState(7 * 60); // 7:00 per mile in seconds
   const [slowPace, setSlowPace] = useState(8 * 60 + 10); // 8:10 per mile in seconds
+  const [routeDistance, setRouteDistance] = useState(0);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -43,28 +44,63 @@ export default function MarathonTracker() {
   useEffect(() => {
     if (!isPlaying) return;
 
-    const interval = setInterval(() => {
-      setCurrentMile((prev) => {
-        const newMile = Math.min(26.2, prev[0] + 0.1 * playbackSpeed);
-        if (newMile >= 26.2) {
-          setIsPlaying(false); // Stop at finish
-        }
-        return [newMile];
-      });
-    }, 100); // Update every 100ms
+    let animationId: number;
+    let lastUpdateTime = performance.now();
 
-    return () => clearInterval(interval);
-  }, [isPlaying, playbackSpeed]);
+    const animate = (currentTime: number) => {
+      const deltaTime = currentTime - lastUpdateTime;
+
+      // Target 60fps but adapt to actual frame rate
+      if (deltaTime >= 16) {
+        setCurrentMile((prev) => {
+          // Smooth increment based on actual time elapsed
+          // Base rate: 0.6 miles per second at 1x speed (realistic marathon pace for viewing)
+          const baseRatePerMs = 0.6 / 1000; // miles per millisecond
+          const increment = baseRatePerMs * deltaTime * playbackSpeed;
+          const maxDistance = routeDistance > 0 ? routeDistance : 26.2; // Fallback to 26.2 if no route loaded
+          const newMile = Math.min(maxDistance, prev[0] + increment);
+
+          if (newMile >= maxDistance) {
+            setIsPlaying(false); // Stop at finish
+          }
+          return [newMile];
+        });
+
+        lastUpdateTime = currentTime;
+      }
+
+      if (isPlaying) {
+        animationId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [isPlaying, playbackSpeed, routeDistance]);
+
+  // Initialize route distance from existing route data
+  useEffect(() => {
+    if (route && route.totalDistance && routeDistance === 0) {
+      setRouteDistance(route.totalDistance);
+    }
+  }, [route, routeDistance]);
 
   useEffect(() => {
-    if (map.current || !mapContainer.current || loading || !route) return;
+    if (map.current || !mapContainer.current || loading || !route || route.points.length === 0) return;
 
     const initializeMap = async () => {
       const maplibregl = await import('maplibre-gl');
       await import('maplibre-gl/dist/maplibre-gl.css');
 
       const routeCoordinates = getRouteCoordinates();
-      const center = routeCoordinates[0] || [-74.0059, 40.7128];
+      if (routeCoordinates.length === 0) return;
+
+      const center = routeCoordinates[0] || [-93.2650, 44.9778]; // Default to Minneapolis coordinates
 
       map.current = new maplibregl.Map({
         container: mapContainer.current!,
@@ -177,6 +213,15 @@ export default function MarathonTracker() {
     };
 
     initializeMap();
+
+    // Cleanup function to destroy the map when route changes
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+        setMapLoaded(false);
+      }
+    };
   }, [route, loading, getRouteCoordinates, getMileMarkers]);
 
   useEffect(() => {
@@ -250,39 +295,17 @@ export default function MarathonTracker() {
 
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3 space-y-6">
-            <RouteSelector
-              selectedRoute={selectedRoute}
-              onRouteChange={setSelectedRoute}
+          <div className="lg:col-span-3">
+            <RoutePlanner
+              onRouteChange={(coordinates, distance) => {
+                // Update route data for the application
+                console.log('Route updated:', coordinates.length, 'points,', distance.toFixed(2), 'miles');
+                setRouteDistance(distance);
+              }}
+              initialRoute={route?.points.map(p => p.coordinates) || []}
+              currentMile={currentMile[0]}
+              showSimulation={Boolean(route?.points?.length)}
             />
-
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  {route?.name}
-                </h2>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-primary rounded-full"></div>
-                    Route
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-accent rounded-full"></div>
-                    Current Position
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-white border-2 border-primary rounded-full"></div>
-                    Mile Markers
-                  </div>
-                </div>
-              </div>
-              <div
-                ref={mapContainer}
-                className="w-full h-96 rounded-lg border border-border"
-                style={{ minHeight: '400px' }}
-              />
-            </Card>
           </div>
 
           <div className="space-y-6">

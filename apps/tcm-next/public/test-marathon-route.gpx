@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Twin Cities Marathon Test">
+  <trk>
+    <name>Twin Cities Marathon Test Route</name>
+    <desc>Test route with many track points to verify full GPX parsing</desc>
+    <trkseg>
+      <!-- Start in Minneapolis with dense track points -->
+      <trkpt lat="44.9778" lon="-93.2650"><ele>262</ele><name>Start</name></trkpt>
+      <trkpt lat="44.9780" lon="-93.2655"><ele>263</ele></trkpt>
+      <trkpt lat="44.9782" lon="-93.2660"><ele>264</ele></trkpt>
+      <trkpt lat="44.9784" lon="-93.2665"><ele>265</ele></trkpt>
+      <trkpt lat="44.9786" lon="-93.2670"><ele>266</ele></trkpt>
+      <trkpt lat="44.9788" lon="-93.2675"><ele>267</ele></trkpt>
+      <trkpt lat="44.9790" lon="-93.2680"><ele>268</ele></trkpt>
+      <trkpt lat="44.9792" lon="-93.2685"><ele>269</ele></trkpt>
+      <trkpt lat="44.9794" lon="-93.2690"><ele>270</ele></trkpt>
+      <trkpt lat="44.9796" lon="-93.2695"><ele>271</ele></trkpt>
+      <trkpt lat="44.9798" lon="-93.2700"><ele>272</ele></trkpt>
+      <trkpt lat="44.9800" lon="-93.2705"><ele>273</ele></trkpt>
+      <trkpt lat="44.9802" lon="-93.2710"><ele>274</ele></trkpt>
+      <trkpt lat="44.9804" lon="-93.2715"><ele>275</ele></trkpt>
+      <trkpt lat="44.9806" lon="-93.2720"><ele>276</ele></trkpt>
+      <trkpt lat="44.9808" lon="-93.2725"><ele>277</ele></trkpt>
+      <trkpt lat="44.9810" lon="-93.2730"><ele>278</ele></trkpt>
+      <trkpt lat="44.9812" lon="-93.2735"><ele>279</ele></trkpt>
+      <trkpt lat="44.9814" lon="-93.2740"><ele>280</ele></trkpt>
+      <trkpt lat="44.9816" lon="-93.2745"><ele>281</ele></trkpt>
+      <!-- Continue north through Minneapolis -->
+      <trkpt lat="44.9818" lon="-93.2750"><ele>282</ele></trkpt>
+      <trkpt lat="44.9820" lon="-93.2755"><ele>283</ele></trkpt>
+      <trkpt lat="44.9822" lon="-93.2760"><ele>284</ele></trkpt>
+      <trkpt lat="44.9824" lon="-93.2765"><ele>285</ele></trkpt>
+      <trkpt lat="44.9826" lon="-93.2770"><ele>286</ele></trkpt>
+      <trkpt lat="44.9828" lon="-93.2775"><ele>287</ele></trkpt>
+      <trkpt lat="44.9830" lon="-93.2780"><ele>288</ele></trkpt>
+      <trkpt lat="44.9832" lon="-93.2785"><ele>289</ele></trkpt>
+      <trkpt lat="44.9834" lon="-93.2790"><ele>290</ele></trkpt>
+      <trkpt lat="44.9836" lon="-93.2795"><ele>291</ele></trkpt>
+      <!-- Turn east towards St. Paul -->
+      <trkpt lat="44.9838" lon="-93.2750"><ele>292</ele></trkpt>
+      <trkpt lat="44.9840" lon="-93.2700"><ele>293</ele></trkpt>
+      <trkpt lat="44.9842" lon="-93.2650"><ele>294</ele></trkpt>
+      <trkpt lat="44.9844" lon="-93.2600"><ele>295</ele></trkpt>
+      <trkpt lat="44.9846" lon="-93.2550"><ele>296</ele></trkpt>
+      <trkpt lat="44.9848" lon="-93.2500"><ele>297</ele></trkpt>
+      <trkpt lat="44.9850" lon="-93.2450"><ele>298</ele></trkpt>
+      <trkpt lat="44.9852" lon="-93.2400"><ele>299</ele></trkpt>
+      <trkpt lat="44.9854" lon="-93.2350"><ele>300</ele></trkpt>
+      <trkpt lat="44.9856" lon="-93.2300"><ele>301</ele></trkpt>
+      <!-- Continue east with many points -->
+      <trkpt lat="44.9858" lon="-93.2250"><ele>302</ele></trkpt>
+      <trkpt lat="44.9860" lon="-93.2200"><ele>303</ele></trkpt>
+      <trkpt lat="44.9862" lon="-93.2150"><ele>304</ele></trkpt>
+      <trkpt lat="44.9864" lon="-93.2100"><ele>305</ele></trkpt>
+      <trkpt lat="44.9866" lon="-93.2050"><ele>306</ele></trkpt>
+      <trkpt lat="44.9868" lon="-93.2000"><ele>307</ele></trkpt>
+      <trkpt lat="44.9870" lon="-93.1950"><ele>308</ele></trkpt>
+      <trkpt lat="44.9872" lon="-93.1900"><ele>309</ele></trkpt>
+      <trkpt lat="44.9874" lon="-93.1850"><ele>310</ele></trkpt>
+      <trkpt lat="44.9876" lon="-93.1800"><ele>311</ele></trkpt>
+      <!-- Add more points to build up distance -->
+      <trkpt lat="44.9878" lon="-93.1750"><ele>312</ele></trkpt>
+      <trkpt lat="44.9880" lon="-93.1700"><ele>313</ele></trkpt>
+      <trkpt lat="44.9882" lon="-93.1650"><ele>314</ele></trkpt>
+      <trkpt lat="44.9884" lon="-93.1600"><ele>315</ele></trkpt>
+      <trkpt lat="44.9886" lon="-93.1550"><ele>316</ele></trkpt>
+      <trkpt lat="44.9888" lon="-93.1500"><ele>317</ele></trkpt>
+      <trkpt lat="44.9890" lon="-93.1450"><ele>318</ele></trkpt>
+      <trkpt lat="44.9892" lon="-93.1400"><ele>319</ele></trkpt>
+      <trkpt lat="44.9894" lon="-93.1350"><ele>320</ele></trkpt>
+      <trkpt lat="44.9896" lon="-93.1300"><ele>321</ele></trkpt>
+      <!-- South towards St. Paul -->
+      <trkpt lat="44.9894" lon="-93.1250"><ele>322</ele></trkpt>
+      <trkpt lat="44.9892" lon="-93.1200"><ele>323</ele></trkpt>
+      <trkpt lat="44.9890" lon="-93.1150"><ele>324</ele></trkpt>
+      <trkpt lat="44.9888" lon="-93.1100"><ele>325</ele></trkpt>
+      <trkpt lat="44.9886" lon="-93.1050"><ele>326</ele></trkpt>
+      <trkpt lat="44.9884" lon="-93.1000"><ele>327</ele></trkpt>
+      <trkpt lat="44.9882" lon="-93.0950"><ele>328</ele></trkpt>
+      <trkpt lat="44.9880" lon="-93.0943"><ele>329</ele></trkpt>
+      <!-- Add final waypoint -->
+      <trkpt lat="44.9537" lon="-93.0943"><ele>330</ele><name>Finish - St. Paul State Capitol</name></trkpt>
+    </trkseg>
+  </trk>
+</gpx>
