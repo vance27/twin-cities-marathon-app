@@ -32,6 +32,7 @@ interface InteractiveControlsProps {
   onPlayToggle: () => void;
   playbackSpeed: number;
   onSpeedChange: (speed: number) => void;
+  routeDistance?: number;
 }
 
 export function InteractiveControls({
@@ -44,6 +45,7 @@ export function InteractiveControls({
   onPlayToggle,
   playbackSpeed,
   onSpeedChange,
+  routeDistance = 26.2,
 }: InteractiveControlsProps) {
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [autoAdvance, setAutoAdvance] = useState(false);
@@ -104,9 +106,9 @@ export function InteractiveControls({
   }, [onPlayToggle, onSpeedChange, showKeyboardShortcuts]);
 
   const jumpForward = useCallback(() => {
-    const newMile = Math.min(26.2, currentMile[0] + 1);
+    const newMile = Math.min(routeDistance, currentMile[0] + 1);
     onMileChange([newMile]);
-  }, [currentMile, onMileChange]);
+  }, [currentMile, onMileChange, routeDistance]);
 
   const jumpBackward = useCallback(() => {
     const newMile = Math.max(0, currentMile[0] - 1);
@@ -241,13 +243,13 @@ export function InteractiveControls({
           <Slider
             value={currentMile}
             onValueChange={onMileChange}
-            max={26.2}
+            max={routeDistance}
             step={0.1}
             className="w-full"
           />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Start</span>
-            <span>13.1 mi</span>
+            <span>{(routeDistance / 2).toFixed(1)} mi</span>
             <span>Finish</span>
           </div>
         </div>
@@ -417,7 +419,7 @@ export function InteractiveControls({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => onMileChange([26.2])}
+            onClick={() => onMileChange([routeDistance])}
             className="flex items-center gap-2"
           >
             <Clock className="w-4 h-4" />

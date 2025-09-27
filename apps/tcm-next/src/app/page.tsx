@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Timer, Target, Mountain, TrendingUp } from 'lucide-react';
 import { useMarathonRoute } from '@/components/marathon-route';
 import { TimeCalculator } from '@/components/time-calculator';
-import { InteractiveControls } from '@/components/interactive-controls';
 import { MileMarkerSystem } from '@/components/mile-marker-system';
 import { RoutePlanner } from '@/components/route-planner';
 
@@ -305,21 +304,16 @@ export default function MarathonTracker() {
               initialRoute={route?.points.map(p => p.coordinates) || []}
               currentMile={currentMile[0]}
               showSimulation={Boolean(route?.points?.length)}
-            />
-          </div>
-
-          <div className="space-y-6">
-            <InteractiveControls
-              currentMile={currentMile}
-              onMileChange={setCurrentMile}
-              fastPace={fastPace}
-              slowPace={slowPace}
-              onPaceChange={handlePaceChange}
               isPlaying={isPlaying}
               onPlayToggle={() => setIsPlaying(!isPlaying)}
               playbackSpeed={playbackSpeed}
               onSpeedChange={setPlaybackSpeed}
+              onMileChange={setCurrentMile}
+              routeDistance={routeDistance > 0 ? routeDistance : 26.2}
             />
+          </div>
+
+          <div className="space-y-6">
 
             <Card className="p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">

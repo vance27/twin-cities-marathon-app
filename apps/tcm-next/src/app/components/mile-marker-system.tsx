@@ -9,11 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   Clock,
   Plus,
-  Download,
-  Upload,
   Trash2,
   TrendingUp,
   TrendingDown,
@@ -45,10 +44,23 @@ export function MileMarkerSystem({
   targetPace,
   currentMile,
 }: MileMarkerSystemProps) {
-  const [newMile, setNewMile] = useState('');
+  const [selectedDistance, setSelectedDistance] = useState('');
   const [newTime, setNewTime] = useState('');
   const [newNote, setNewNote] = useState('');
-  const [bulkData, setBulkData] = useState('');
+
+  // Predefined race distances in kilometers and miles
+  const raceDistances = [
+    { label: '5K', km: 5, miles: 3.11 },
+    { label: '10K', km: 10, miles: 6.21 },
+    { label: '15K', km: 15, miles: 9.32 },
+    { label: '20K', km: 20, miles: 12.43 },
+    { label: 'Half Marathon', km: 21.1, miles: 13.1 },
+    { label: '25K', km: 25, miles: 15.53 },
+    { label: '30K', km: 30, miles: 18.64 },
+    { label: '35K', km: 35, miles: 21.75 },
+    { label: '40K', km: 40, miles: 24.85 },
+    { label: 'Finish', km: 42.2, miles: 26.2 },
+  ];
   const [editingMarker, setEditingMarker] = useState<number | null>(null);
 
   // Calculate pace and splits for markers
@@ -84,16 +96,17 @@ export function MileMarkerSystem({
   });
 
   const addMileMarker = () => {
-    if (!newMile || !newTime) return;
+    if (!selectedDistance || !newTime) return;
 
-    const mile = Number.parseFloat(newMile);
-    if (mile < 0 || mile > 26.2) return;
+    const selectedRaceDistance = raceDistances.find(d => d.label === selectedDistance);
+    if (!selectedRaceDistance) return;
 
+    const mile = selectedRaceDistance.miles;
     const newMarker: MileMarker = {
       mile,
       time: newTime,
       actualTime: newTime,
-      note: newNote || undefined,
+      note: newNote || `${selectedRaceDistance.label} (${selectedRaceDistance.km}K)`,
     };
 
     const updatedMarkers = [
@@ -101,7 +114,7 @@ export function MileMarkerSystem({
       newMarker,
     ].sort((a, b) => a.mile - b.mile);
     onMarkersChange(updatedMarkers);
-    setNewMile('');
+    setSelectedDistance('');
     setNewTime('');
     setNewNote('');
   };
@@ -285,33 +298,36 @@ export function MileMarkerSystem({
           <TabsContent value="add" className="space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <Plus className="w-5 h-5 text-primary" />
-              <h4 className="font-semibold">Add Mile Marker</h4>
+              <h4 className="font-semibold">Add Race Marker</h4>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="mile" className="text-sm">
-                  Mile
+                <Label htmlFor="distance" className="text-sm">
+                  Race Distance
                 </Label>
-                <Input
-                  id="mile"
-                  type="number"
-                  placeholder="13.1"
-                  value={newMile}
-                  onChange={(e) => setNewMile(e.target.value)}
-                  min="0"
-                  max="26.2"
-                  step="0.1"
-                />
+                <Select value={selectedDistance} onValueChange={setSelectedDistance}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select distance..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+                    {raceDistances.map((distance) => (
+                      <SelectItem key={distance.label} value={distance.label}>
+                        {distance.label} ({distance.km}K / {distance.miles.toFixed(1)} mi)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="time" className="text-sm">
-                  Time
+                  Race Time (HH:MM:SS)
                 </Label>
                 <Input
                   id="time"
-                  type="time"
-                  step="1"
+                  type="text"
+                  placeholder="01:30:45"
+                  pattern="^([0-9]{2}):([0-5][0-9]):([0-5][0-9])$"
                   value={newTime}
                   onChange={(e) => setNewTime(e.target.value)}
                 />
@@ -330,9 +346,14 @@ export function MileMarkerSystem({
               />
             </div>
 
-            <Button onClick={addMileMarker} className="w-full" size="sm">
+            <Button
+              onClick={addMileMarker}
+              className="w-full"
+              size="sm"
+              disabled={!selectedDistance || !newTime}
+            >
               <Plus className="w-4 h-4 mr-2" />
-              Add Marker
+              Add Race Marker
             </Button>
           </TabsContent>
 

@@ -5,80 +5,57 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Route, Upload } from 'lucide-react';
+import { MapPin, Route, Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
 import { InteractiveMap } from './interactive-map';
-import { GPXUploader } from './gpx-uploader';
 
 interface RoutePlannerProps {
   onRouteChange?: (coordinates: [number, number][], distanceMiles: number) => void;
   initialRoute?: [number, number][];
   currentMile?: number;
   showSimulation?: boolean;
+  isPlaying?: boolean;
+  onPlayToggle?: () => void;
+  playbackSpeed?: number;
+  onSpeedChange?: (speed: number) => void;
+  onMileChange?: (mile: number[]) => void;
+  routeDistance?: number;
 }
 
-export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, showSimulation = false }: RoutePlannerProps) {
+export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, showSimulation = false, isPlaying = false, onPlayToggle, playbackSpeed = 1, onSpeedChange, onMileChange, routeDistance = 26.2 }: RoutePlannerProps) {
   const [currentRoute, setCurrentRoute] = useState<[number, number][]>(initialRoute || []);
-  const [routeDistance, setRouteDistance] = useState(0);
-  const [uploadedFileName, setUploadedFileName] = useState('');
-  const [activeTab, setActiveTab] = useState('draw');
+  const [localRouteDistance, setLocalRouteDistance] = useState(0);
 
   const handleRouteUpdate = (coordinates: [number, number][], distanceMiles: number) => {
     setCurrentRoute(coordinates);
-    setRouteDistance(distanceMiles);
+    setLocalRouteDistance(distanceMiles);
 
     if (onRouteChange) {
       onRouteChange(coordinates, distanceMiles);
     }
   };
 
-  const handleGPXUpload = async (file: File) => {
-    setUploadedFileName(file.name);
-
-    try {
-      // Parse the GPX file
-      const { loadGPXFile, convertGPXToCoordinates } = await import('@/utils/gpx-parser');
-      const gpxData = await loadGPXFile(file);
-      const coordinates = convertGPXToCoordinates(gpxData);
-
-      // Calculate total distance
-      let totalDistance = 0;
-      for (let i = 1; i < coordinates.length; i++) {
-        const [lon1, lat1] = coordinates[i - 1];
-        const [lon2, lat2] = coordinates[i];
-
-        // Simple distance calculation (you could import the calculateDistance function)
-        const R = 3959; // Earth's radius in miles
-        const dLat = (lat2 - lat1) * (Math.PI / 180);
-        const dLon = (lon2 - lon1) * (Math.PI / 180);
-        const a =
-          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(lat1 * (Math.PI / 180)) *
-            Math.cos(lat2 * (Math.PI / 180)) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        totalDistance += R * c;
-      }
-
-      // Update the route
-      handleRouteUpdate(coordinates, totalDistance);
-
-    } catch (error) {
-      console.error('Error parsing GPX file:', error);
-      alert('Error parsing GPX file. Please check the file format.');
+  const jumpForward = () => {
+    if (onMileChange) {
+      const newMile = Math.min(routeDistance, currentMile + 1);
+      onMileChange([newMile]);
     }
   };
 
-  const clearGPX = () => {
-    setUploadedFileName('');
-    setCurrentRoute([]);
-    setRouteDistance(0);
-    if (onRouteChange) {
-      onRouteChange([], 0);
+  const jumpBackward = () => {
+    if (onMileChange) {
+      const newMile = Math.max(0, currentMile - 1);
+      onMileChange([newMile]);
     }
   };
 
-  const isMarathonDistance = routeDistance >= 26.0 && routeDistance <= 26.5;
+  const resetPosition = () => {
+    if (onMileChange) {
+      onMileChange([0]);
+    }
+  };
+
+
+  const isMarathonDistance = localRouteDistance >= 26.0 && localRouteDistance <= 26.5;
 
   return (
     <Card className="p-6">
@@ -90,16 +67,16 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
               <Route className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold">Route Planner</h2>
+              <h2 className="text-xl font-semibold">Race Simulator</h2>
               <p className="text-sm text-muted-foreground">
-                Create or upload your Twin Cities Marathon route
+                Experience the Twin Cities Marathon route
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {routeDistance > 0 && (
+            {localRouteDistance > 0 && (
               <Badge variant={isMarathonDistance ? 'default' : 'secondary'}>
-                {routeDistance.toFixed(2)} miles
+                {localRouteDistance.toFixed(2)} miles
               </Badge>
             )}
             {isMarathonDistance && (
@@ -110,63 +87,93 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
           </div>
         </div>
 
-        {/* Route Planning Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="draw" className="flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Draw Route
-            </TabsTrigger>
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <Upload className="w-4 h-4" />
-              Upload GPX
-            </TabsTrigger>
-          </TabsList>
+        {/* Simulation Controls */}
+        {currentRoute.length > 0 && (
+          <div className="space-y-4">
+            {/* Main Controls */}
+            <div className="flex items-center justify-center gap-4 p-4 bg-muted rounded-lg">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={jumpBackward}
+                className="flex items-center gap-2"
+              >
+                <SkipBack className="w-4 h-4" />
+                -1 Mile
+              </Button>
 
-          {/* Interactive Drawing Tab */}
-          <TabsContent value="draw" className="mt-6">
-            <InteractiveMap
-              onRouteChange={handleRouteUpdate}
-              initialRoute={currentRoute}
-              center={[-93.2650, 44.9778]} // Minneapolis/St. Paul
-              zoom={12}
-              height="600px"
-              currentMile={currentMile}
-              showSimulation={showSimulation}
-            />
-          </TabsContent>
+              <Button
+                onClick={onPlayToggle}
+                size="lg"
+                className="flex items-center gap-2"
+                disabled={!onPlayToggle}
+              >
+                {isPlaying ? (
+                  <Pause className="w-5 h-5" />
+                ) : (
+                  <Play className="w-5 h-5" />
+                )}
+                {isPlaying ? 'Pause' : 'Play'}
+              </Button>
 
-          {/* GPX Upload Tab */}
-          <TabsContent value="upload" className="mt-6">
-            <div className="space-y-4">
-              <GPXUploader
-                onFileSelect={handleGPXUpload}
-                onClear={clearGPX}
-                uploadedFileName={uploadedFileName}
-              />
-
-              {uploadedFileName && (
-                <div className="mt-4 p-4 bg-muted rounded-lg">
-                  <h3 className="font-semibold mb-2">Route Loaded</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Your GPX route has been loaded. You can view and edit it in the Draw Route tab.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Switch to draw tab to show the route
-                      setActiveTab('draw');
-                    }}
-                  >
-                    <MapPin className="w-4 h-4 mr-2" />
-                    View on Map
-                  </Button>
-                </div>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={jumpForward}
+                className="flex items-center gap-2"
+              >
+                <SkipForward className="w-4 h-4" />
+                +1 Mile
+              </Button>
             </div>
-          </TabsContent>
-        </Tabs>
+
+            {/* Position and Speed Controls */}
+            <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
+              <div className="flex items-center gap-4">
+                <div className="text-sm">
+                  <span className="text-muted-foreground">Position:</span>{' '}
+                  <span className="font-medium">Mile {currentMile.toFixed(1)}</span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={resetPosition}
+                  className="flex items-center gap-1"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Reset
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Speed:</span>
+                {[0.5, 1, 2, 5].map((speed) => (
+                  <Button
+                    key={speed}
+                    variant={playbackSpeed === speed ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => onSpeedChange?.(speed)}
+                    className="text-xs"
+                  >
+                    {speed}x
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Race Route Map */}
+        <div className="mt-6">
+          <InteractiveMap
+            onRouteChange={handleRouteUpdate}
+            initialRoute={currentRoute}
+            center={[-93.2650, 44.9778]} // Minneapolis/St. Paul
+            zoom={12}
+            height="600px"
+            currentMile={currentMile}
+            showSimulation={showSimulation}
+          />
+        </div>
 
         {/* Route Statistics */}
         {currentRoute.length > 0 && (
@@ -179,13 +186,13 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
-                {routeDistance.toFixed(1)}
+                {localRouteDistance.toFixed(1)}
               </div>
               <div className="text-sm text-muted-foreground">Miles</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-primary">
-                {isMarathonDistance ? '✓' : (26.2 - routeDistance).toFixed(1)}
+                {isMarathonDistance ? '✓' : (26.2 - localRouteDistance).toFixed(1)}
               </div>
               <div className="text-sm text-muted-foreground">
                 {isMarathonDistance ? 'Ready' : 'Miles to go'}
@@ -196,13 +203,12 @@ export function RoutePlanner({ onRouteChange, initialRoute, currentMile = 0, sho
 
         {/* Tips */}
         <div className="text-xs text-muted-foreground p-3 bg-accent/20 rounded-lg">
-          <p><strong>Pro Tips:</strong></p>
+          <p><strong>How to use:</strong></p>
           <ul className="list-disc list-inside mt-1 space-y-1">
-            <li>Use the Twin Cities area (Minneapolis/St. Paul) for authentic marathon routes</li>
-            <li>A marathon is 26.2 miles - aim for this distance</li>
-            <li>Consider elevation changes and scenic areas for the best route</li>
-            <li>You can switch between drawing and uploading modes</li>
-            <li>Export your final route as GPX for GPS devices</li>
+            <li>Use the simulation controls to follow a runner through the race</li>
+            <li>Add race markers at specific distances to log split times</li>
+            <li>Track your progress through the famous Twin Cities Marathon route</li>
+            <li>Adjust playback speed to review different parts of the race</li>
           </ul>
         </div>
       </div>
