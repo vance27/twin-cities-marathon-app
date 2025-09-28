@@ -212,6 +212,11 @@ export function RoutePlanner({
             height="600px"
             currentMile={currentMile}
             showSimulation={showSimulation}
+            showAddMarkerButton={true}
+            onMarkerAdded={() => {
+              // Could refresh some state here if needed
+              console.log('Marker added successfully');
+            }}
           />
         </div>
 
@@ -234,7 +239,7 @@ export function RoutePlanner({
               <div className="text-2xl font-bold text-primary">
                 {isMarathonDistance
                   ? '✓'
-                  : (26.2 - localRouteDistance).toFixed(1)}
+                  : (localRouteDistance - currentMile).toFixed(1)}
               </div>
               <div className="text-sm text-muted-foreground">
                 {isMarathonDistance ? 'Ready' : 'Miles to go'}

@@ -8,6 +8,7 @@ import { useMarathonRoute } from '@/components/marathon-route';
 import { TimeCalculator } from '@/components/time-calculator';
 import { MileMarkerSystem } from '@/components/mile-marker-system';
 import { RoutePlanner } from '@/components/route-planner';
+import { trpc } from '../lib/trpc/client';
 
 interface MileMarker {
   mile: number;
@@ -31,6 +32,9 @@ export default function MarathonTracker() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+
+  // Get latest marker to set default position
+  const { data: latestMarker } = trpc.marker.getLatest.useQuery();
 
   const {
     route,
@@ -88,6 +92,14 @@ export default function MarathonTracker() {
       setRouteDistance(route.totalDistance);
     }
   }, [route, routeDistance]);
+
+  // Set current mile to latest marker distance (converted from km to miles)
+  useEffect(() => {
+    if (latestMarker && currentMile[0] === 0) {
+      const distanceInMiles = latestMarker.distanceKm * 0.621371; // Convert km to miles
+      setCurrentMile([distanceInMiles]);
+    }
+  }, [latestMarker, currentMile]);
 
   useEffect(() => {
     if (map.current || !mapContainer.current || loading || !route || route.points.length === 0) return;
