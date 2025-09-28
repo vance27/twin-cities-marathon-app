@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  tcm-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://tcm_user:${POSTGRES_PASSWORD:-tcm_password}@postgres:5432/tcm_db
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - tcm-network
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=tcm_db
+      - POSTGRES_USER=tcm_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-tcm_password}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tcm_user -d tcm_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - tcm-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  tcm-network:
+    driver: bridge
