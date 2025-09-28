@@ -10,14 +10,6 @@ import { MileMarkerSystem } from '@/components/mile-marker-system';
 import { RoutePlanner } from '@/components/route-planner';
 import { trpc } from '../lib/trpc/client';
 
-interface MileMarker {
-  mile: number;
-  time: string;
-  actualTime?: string;
-  pace?: number;
-  split?: number;
-  note?: string;
-}
 
 export default function MarathonTracker() {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -25,7 +17,6 @@ export default function MarathonTracker() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [selectedRoute] = useState('twin-cities-marathon');
   const [currentMile, setCurrentMile] = useState([0]);
-  const [mileMarkers, setMileMarkers] = useState<MileMarker[]>([]);
   const [fastPace, setFastPace] = useState(7 * 60); // 7:00 per mile in seconds
   const [slowPace, setSlowPace] = useState(8 * 60 + 10); // 8:10 per mile in seconds
   const [routeDistance, setRouteDistance] = useState(0);
@@ -278,12 +269,12 @@ export default function MarathonTracker() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-pastel-pink/20">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                <Target className="w-4 h-4 text-primary-foreground" />
+              <div className="w-8 h-8 bg-pastel-mint rounded-full flex items-center justify-center">
+                <Target className="w-4 h-4 text-gray-800" />
               </div>
               <h1 className="text-2xl font-bold text-foreground">
                 Marathon Tracker
@@ -291,12 +282,16 @@ export default function MarathonTracker() {
             </div>
             <div className="flex items-center gap-3">
               <Badge
-                variant={isPlaying ? 'default' : 'secondary'}
-                className="text-sm"
+                variant="outline"
+                className={`text-sm ${
+                  isPlaying
+                    ? 'bg-pastel-mint border-pastel-mint text-gray-800'
+                    : 'bg-pastel-gray border-pastel-gray text-gray-800'
+                }`}
               >
                 {isPlaying ? 'Simulating' : 'Paused'}
               </Badge>
-              <Badge variant="outline" className="text-sm">
+              <Badge variant="outline" className="text-sm bg-pastel-lavender border-pastel-lavender text-gray-800">
                 {playbackSpeed}x Speed
               </Badge>
             </div>
@@ -327,14 +322,14 @@ export default function MarathonTracker() {
 
           <div className="space-y-6">
 
-            <Card className="p-6">
+            <Card className="p-6 bg-pastel-blue/10 border-pastel-blue">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Timer className="w-5 h-5 text-primary" />
+                <Timer className="w-5 h-5 text-pastel-mint" />
                 Current Status
               </h3>
               <div className="space-y-4">
                 {currentElevation && (
-                  <div className="p-3 bg-muted rounded-lg text-center">
+                  <div className="p-3 bg-pastel-yellow/50 rounded-lg text-center border border-pastel-yellow">
                     <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
                       <Mountain className="w-3 h-3" />
                       Current Elevation
@@ -348,19 +343,19 @@ export default function MarathonTracker() {
             </Card>
 
             {route && (
-              <Card className="p-6">
+              <Card className="p-6 bg-pastel-peach/10 border-pastel-peach">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <TrendingUp className="w-5 h-5 text-pastel-lavender" />
                   Route Details
                 </h3>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between p-2 bg-pastel-lavender/30 rounded">
                     <span className="text-muted-foreground">Distance:</span>
                     <span className="font-semibold">
                       {route.totalDistance} miles
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between p-2 bg-pastel-mint/30 rounded">
                     <span className="text-muted-foreground">
                       Elevation Gain:
                     </span>
@@ -368,15 +363,15 @@ export default function MarathonTracker() {
                       {route.elevationGain}ft
                     </span>
                   </div>
-                  <div className="pt-2 border-t border-border">
+                  <div className="pt-2 border-t border-pastel-peach">
                     <div className="text-muted-foreground mb-1">Start:</div>
-                    <div className="font-medium text-xs">
+                    <div className="font-medium text-xs bg-pastel-blue/20 p-1 rounded">
                       {route.startLocation}
                     </div>
                   </div>
                   <div>
                     <div className="text-muted-foreground mb-1">Finish:</div>
-                    <div className="font-medium text-xs">
+                    <div className="font-medium text-xs bg-pastel-yellow/20 p-1 rounded">
                       {route.finishLocation}
                     </div>
                   </div>
@@ -388,10 +383,9 @@ export default function MarathonTracker() {
 
         <div className="mt-8">
           <MileMarkerSystem
-            mileMarkers={mileMarkers}
-            onMarkersChange={setMileMarkers}
             targetPace={{ fast: fastPace, slow: slowPace }}
             currentMile={currentMile[0]}
+            routeCoordinates={route?.points.map(p => p.coordinates) || []}
           />
         </div>
 
@@ -399,7 +393,6 @@ export default function MarathonTracker() {
           <TimeCalculator
             route={route}
             currentMile={currentMile[0]}
-            mileMarkers={mileMarkers}
             fastPace={fastPace}
             slowPace={slowPace}
           />

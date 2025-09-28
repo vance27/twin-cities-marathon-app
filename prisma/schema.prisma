@@ -20,6 +20,8 @@ model Marker {
   latitude    Float
   longitude   Float
   distanceKm  Float    // Distance in kilometers from start
+  raceTime    String?  // Race time at this marker (HH:MM:SS format)
+  note        String?  // Optional note about the marker
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

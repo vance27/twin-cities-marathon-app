@@ -118,12 +118,12 @@ export function RoutePlanner({
         {currentRoute.length > 0 && (
           <div className="space-y-4">
             {/* Main Controls */}
-            <div className="flex items-center justify-center gap-4 p-4 bg-muted rounded-lg">
+            <div className="flex items-center justify-center gap-4 p-4 bg-pastel-blue/30 rounded-lg">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={jumpBackward}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-pastel-peach border-pastel-peach hover:bg-pastel-peach/80"
               >
                 <SkipBack className="w-4 h-4" />
                 -1 Mile
@@ -132,7 +132,7 @@ export function RoutePlanner({
               <Button
                 onClick={onPlayToggle}
                 size="lg"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-pastel-mint hover:bg-pastel-mint/80 text-gray-800"
                 disabled={!onPlayToggle}
               >
                 {isPlaying ? (
@@ -147,7 +147,7 @@ export function RoutePlanner({
                 variant="outline"
                 size="sm"
                 onClick={jumpForward}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-pastel-peach border-pastel-peach hover:bg-pastel-peach/80"
               >
                 <SkipForward className="w-4 h-4" />
                 +1 Mile
@@ -156,12 +156,12 @@ export function RoutePlanner({
               {/* <div className="h-6 w-px bg-border mx-2"></div> */}
             </div>
 
-            <div className="flex items-center justify-center gap-4 p-4 bg-muted rounded-lg">
+            <div className="flex items-center justify-center gap-4 p-4 bg-pastel-lavender/30 rounded-lg">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={resetPosition}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 bg-pastel-yellow border-pastel-yellow hover:bg-pastel-yellow/80"
               >
                 <RotateCcw className="w-3 h-3" />
                 Reset
@@ -173,7 +173,11 @@ export function RoutePlanner({
                   variant={playbackSpeed === speed ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => onSpeedChange?.(speed)}
-                  className="text-xs"
+                  className={`text-xs ${
+                    playbackSpeed === speed
+                      ? 'bg-pastel-pink border-pastel-pink text-gray-800'
+                      : 'bg-white border-pastel-pink hover:bg-pastel-pink/20'
+                  }`}
                 >
                   {speed}x
                 </Button>
@@ -212,11 +216,6 @@ export function RoutePlanner({
             height="600px"
             currentMile={currentMile}
             showSimulation={showSimulation}
-            showAddMarkerButton={true}
-            onMarkerAdded={() => {
-              // Could refresh some state here if needed
-              console.log('Marker added successfully');
-            }}
           />
         </div>
 

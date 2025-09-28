@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calculator, Target, AlertTriangle } from 'lucide-react';
 import type { MarathonRoute, RoutePoint } from './marathon-route';
+import { trpc } from '../../lib/trpc/client';
 
 interface MileMarker {
   mile: number;
@@ -27,7 +28,6 @@ interface PaceZone {
 interface TimeCalculatorProps {
   route: MarathonRoute | null;
   currentMile: number;
-  mileMarkers: MileMarker[];
   fastPace: number;
   slowPace: number;
 }
@@ -66,7 +66,6 @@ const paceZones: PaceZone[] = [
 export function TimeCalculator({
   route,
   currentMile,
-  mileMarkers,
   fastPace,
   slowPace,
 }: TimeCalculatorProps) {
@@ -75,6 +74,19 @@ export function TimeCalculator({
   const [splitStrategy, setSplitStrategy] = useState<
     'even' | 'negative' | 'positive'
   >('even');
+
+  // Fetch database markers with race times
+  const { data: databaseMarkers } = trpc.marker.getAll.useQuery();
+
+  // Convert database markers to mile markers format
+  const mileMarkers: MileMarker[] = (databaseMarkers || [])
+    .filter(marker => marker.raceTime) // Only markers with race times
+    .sort((a, b) => a.distanceKm - b.distanceKm) // Sort by distance
+    .map(marker => ({
+      mile: marker.distanceKm * 0.621371, // Convert km to miles
+      time: marker.raceTime!,
+      actualTime: marker.raceTime!,
+    }));
 
   // Calculate elevation adjustment factor
   const getElevationAdjustment = (

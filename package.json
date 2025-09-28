@@ -1,6 +1,9 @@
 {
     "name": "twin-cities-marathon-app",
     "packageManager": "yarn@4.10.3",
+    "scripts": {
+        "db:studio": "npx prisma studio"
+    },
     "dependencies": {
         "@prisma/client": "^6.16.2",
         "@radix-ui/react-accordion": "1.2.2",

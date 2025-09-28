@@ -24,7 +24,9 @@ export const markerRouter = router({
       description: z.string().optional(),
       latitude: z.number(),
       longitude: z.number(),
-      distanceKm: z.number().min(0)
+      distanceKm: z.number().min(0),
+      raceTime: z.string().optional(),
+      note: z.string().optional()
     }))
     .mutation(async ({ ctx, input }) => {
       return ctx.prisma.marker.create({
